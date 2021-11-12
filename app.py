@@ -3,6 +3,7 @@ import os
 
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
+from dotenv import load_dotenv
 
 from document_list import DocumentList
 from document_finder import DocumentFinder
@@ -35,6 +36,7 @@ def generate_docs(body, say):
     )
 
 if __name__ == "__main__":
+    load_dotenv()
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
     logger.addHandler(logging.StreamHandler())

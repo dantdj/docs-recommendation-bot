@@ -35,22 +35,9 @@ class DocumentFinder():
         text_files = glob.glob(f"{directory_path}/**/*.txt", recursive=True)
         print(text_files)
 
-        # Produce tf-idf vector frame
+        # Produce tf-idf vector 
         vectorizer = TfidfVectorizer(input='filename', stop_words='english')
         vector = vectorizer.fit_transform(text_files)
-
-        # data_frame = pd.DataFrame(vector.toarray(), index=text_titles, columns=vectorizer.get_feature_names_out())
-    
-        # # Flip words from having columns to being rows instead (easier to read)
-        # data_frame = data_frame.stack().reset_index()
-        # # Name the columns appropriately
-        # data_frame = data_frame.rename(columns={0:'tfidf', 'level_0': 'document','level_1': 'term', 'level_2': 'term'})
-
-        # print(data_frame)
-
-        # # Print the top 10 tf-idf scores for each document
-        # top_tfidf = data_frame.sort_values(by=['document','tfidf'], ascending=[True,False]).groupby(['document']).head(10)
-        # print(top_tfidf)
 
         query = ['./query.txt']
         # Vectorize the query to the same length as documents
