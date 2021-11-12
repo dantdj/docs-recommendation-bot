@@ -13,3 +13,9 @@
 
 # Dependency directories (remove the comment below to include it)
 # vendor/
+
+# Documents used for testing the finder
+test_docs/
+
+# Environment variables file
+.env
