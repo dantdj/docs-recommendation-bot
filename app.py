@@ -14,10 +14,10 @@ app = App(
 
 document_messages_sent = {}
 
-def discover_documents():
+def discover_documents(query):
     document_list = DocumentList()
     document_finder = DocumentFinder()
-    documents = document_finder.get_recommended_documents()
+    documents = document_finder.get_recommended_documents(query)
 
     return document_list.get_message_payload(documents)
 
@@ -28,9 +28,11 @@ def generate_docs(body, say):
         threadTs = body["event"]["thread_ts"]
     else:
         threadTs = body["event"]["ts"]
-
+    query = body["event"]["text"]
+    print(query)
+    
     say(
-        blocks=discover_documents(),
+        blocks=discover_documents(query),
         text="Here's some docs",
         thread_ts=threadTs
     )

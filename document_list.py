@@ -26,8 +26,10 @@ class DocumentList:
 
     def get_message_payload(self, documents):
         document_block = self.DOC_TEMPLATE_BLOCK
+        document_list = []
         for document in documents:
-            document_block["text"]["text"] += "- " + document + "\n"
+            document_list.append("- " + document + "\n")
+        document_block["text"]["text"] = ''.join(document_list)
 
         return [
                 self.INTRO_BLOCK,

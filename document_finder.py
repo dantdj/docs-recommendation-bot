@@ -27,7 +27,7 @@ class DocumentFinder():
     def noop_tokenizer(self, text):
         return text
 
-    def get_recommended_documents(self):
+    def get_recommended_documents(self, query):
         # Read documents
         directory_path = "./test_docs"
         text_files = glob.glob(f"{directory_path}/**/*.txt", recursive=True)
@@ -43,10 +43,10 @@ class DocumentFinder():
         vectorizer = TfidfVectorizer(tokenizer=self.noop_tokenizer, lowercase=False)
         vector = vectorizer.fit_transform(document_list)
 
-        query = [self.preprocess_document("how do I access the bastions?")]
+        query_list = [self.preprocess_document(query)]
 
         # Vectorize the query to the same length as documents
-        query_vec = vectorizer.transform(query)
+        query_vec = vectorizer.transform(query_list)
 
         # Compute the cosine similarity between query_vec and all the documents
         cosine_similarities = cosine_similarity(vector, query_vec).flatten()
