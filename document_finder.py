@@ -18,16 +18,14 @@ class DocumentFinder():
 
     def preprocess_document(self, raw_file):
         token_list = word_tokenize(raw_file)
-    
-        token_list = [token for token in token_list if token not in stopwords.words('english')]
 
         lemmatizer = WordNetLemmatizer()
         token_list = [lemmatizer.lemmatize(token) for token in token_list]
 
-        ps = PorterStemmer()
-        token_list = [ps.stem(token) for token in token_list]
-
         return token_list
+
+    def noop_tokenizer(self, text):
+        return text
 
     def get_recommended_documents(self):
         # Read documents
@@ -35,13 +33,21 @@ class DocumentFinder():
         text_files = glob.glob(f"{directory_path}/**/*.txt", recursive=True)
         print(text_files)
 
-        # Produce tf-idf vector 
-        vectorizer = TfidfVectorizer(input='filename', stop_words='english')
-        vector = vectorizer.fit_transform(text_files)
+        document_list = []
+        for file in text_files:
+            with open(file) as f:
+                preprocessed_document = self.preprocess_document(f.read())
+                document_list.append(preprocessed_document)
 
-        query = ['./query.txt']
+        # Produce tf-idf vector 
+        vectorizer = TfidfVectorizer(tokenizer=self.noop_tokenizer, lowercase=False)
+        vector = vectorizer.fit_transform(document_list)
+
+        query = [self.preprocess_document("how do I access the bastions?")]
+
         # Vectorize the query to the same length as documents
         query_vec = vectorizer.transform(query)
+
         # Compute the cosine similarity between query_vec and all the documents
         cosine_similarities = cosine_similarity(vector, query_vec).flatten()
         # Sort the similar documents from the most similar to less similar and return the indices
