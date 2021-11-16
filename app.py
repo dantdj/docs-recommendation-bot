@@ -1,5 +1,6 @@
 import logging
 import os
+import json
 
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
@@ -12,14 +13,17 @@ app = App(
     token=os.environ.get("SLACK_BOT_TOKEN")
 )
 
-document_messages_sent = {}
+config = {}
 
-def discover_documents(query):
+def discover_documents(query, directory_list):
     document_list = DocumentList()
     document_finder = DocumentFinder()
-    documents = document_finder.get_recommended_documents(query)
+    documents, directory = document_finder.get_recommended_documents(query, directory_list)
+    
+    if not documents:
+        return
 
-    return document_list.get_message_payload(documents)
+    return document_list.get_message_payload(documents, config["GIT_URL"], directory)
 
 @app.event("message")
 def generate_docs(body, say):
@@ -30,15 +34,24 @@ def generate_docs(body, say):
         threadTs = body["event"]["ts"]
     query = body["event"]["text"]
     print(query)
-    
+
+    documents = discover_documents(query, config["DOC_DIRECTORIES"])
+    # If no documents to provide, don't bother responding to the message
+    if documents == None:
+        return None
+
     say(
-        blocks=discover_documents(query),
+        blocks=documents,
         text="Here's some docs",
         thread_ts=threadTs
     )
 
 if __name__ == "__main__":
     load_dotenv()
+
+    with open('config.json') as f:
+        config = json.load(f)
+
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
     logger.addHandler(logging.StreamHandler())

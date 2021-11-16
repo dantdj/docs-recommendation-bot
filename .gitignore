@@ -19,3 +19,9 @@ test_docs/
 
 # Environment variables file
 .env
+
+# Config
+config.json
+
+# Mac stuff
+*.DS_Store

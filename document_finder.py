@@ -1,17 +1,16 @@
-from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer, PorterStemmer
+from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity 
 
-from pathlib import Path
 import glob
 
 class DocumentFinder():
     files = []
     corpus = []
+    vectorizer = TfidfVectorizer()
 
     def __init__(self):
         pass
@@ -27,39 +26,37 @@ class DocumentFinder():
     def noop_tokenizer(self, text):
         return text
 
-    def get_recommended_documents(self, query):
-        # Read documents
-        directory_path = "./test_docs"
-        text_files = glob.glob(f"{directory_path}/**/*.txt", recursive=True)
-        print(text_files)
-
-        document_list = []
-        for file in text_files:
-            with open(file) as f:
-                preprocessed_document = self.preprocess_document(f.read())
-                document_list.append(preprocessed_document)
-
-        # Produce tf-idf vector 
-        vectorizer = TfidfVectorizer(tokenizer=self.noop_tokenizer, lowercase=False)
-        vector = vectorizer.fit_transform(document_list)
-
-        query_list = [self.preprocess_document(query)]
-
-        # Vectorize the query to the same length as documents
-        query_vec = vectorizer.transform(query_list)
-
-        # Compute the cosine similarity between query_vec and all the documents
-        cosine_similarities = cosine_similarity(vector, query_vec).flatten()
-        # Sort the similar documents from the most similar to less similar and return the indices
-        most_similar_doc_indices = np.argsort(cosine_similarities, axis=0)[:-5-1:-1]
-
-        # Match the indices of similar docs against the original input list to return the relevant docs
-        counter = 1
+    def get_recommended_documents(self, query, configured_directories):
         doc_titles = []
-        for index in most_similar_doc_indices:
-            doc_titles.append(text_files[index])
-            print('Top-{}, Similarity = {}'.format(counter, cosine_similarities[index]))
-            print('body: {}, '.format(text_files[index]))
-            print()
-            counter += 1
-        return doc_titles
+        chosen_directory = {}
+
+        for directory in configured_directories:
+            chosen_directory = directory
+            file_list = glob.glob(f"{directory['path']}/**/*.md", recursive=True)
+
+            # Remove the README files - they're just content pages and can throw things off
+            file_list = [filename for filename in file_list if "readme.md" not in filename.lower()]
+
+            document_list = []
+            for file in file_list:
+                with open(file) as f:
+                    preprocessed_document = self.preprocess_document(f.read())
+                    document_list.append(preprocessed_document)
+
+            vectorizer = TfidfVectorizer(tokenizer=self.noop_tokenizer, lowercase=False)
+            vector = vectorizer.fit_transform(document_list)
+
+            query_list = [self.preprocess_document(query)]
+            query_vec = vectorizer.transform(query_list)
+
+            cosine_similarities = cosine_similarity(vector, query_vec).flatten()
+            most_similar_doc_indices = np.argsort(cosine_similarities, axis=0)[:-5-1:-1]
+
+            for index in most_similar_doc_indices:
+                if cosine_similarities[index] != 0:
+                    doc_titles.append(file_list[index])
+                print('Similarity = {}'.format(cosine_similarities[index]))
+                print('file: {}, '.format(file_list[index]))
+                print()
+        
+        return (doc_titles, chosen_directory)
