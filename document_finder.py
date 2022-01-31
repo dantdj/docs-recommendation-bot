@@ -43,6 +43,7 @@ class DocumentFinder():
                     preprocessed_document = self.preprocess_document(f.read())
                     document_list.append(preprocessed_document)
 
+            # Using a no-op tokenizer here as we tokenized ourselves during pre-processing
             vectorizer = TfidfVectorizer(tokenizer=self.noop_tokenizer, lowercase=False)
             vector = vectorizer.fit_transform(document_list)
 

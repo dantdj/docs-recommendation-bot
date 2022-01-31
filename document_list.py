@@ -27,10 +27,10 @@ class DocumentList:
         pass
 
     def extract_document_title(self, document):
-        # Take the first line, remove the first two characters to remove the Markdown
-        # formatting for the header, and then strip to remove whitespace
+        # Take the first line, remove all #'s from it to strip out formatting
+        # Also strip whitespace, I think the newline on the end affects the URL formatting later
         with open(document) as f:
-            return f.readline()[2:].strip()
+            return f.readline().replace("#", "").strip()
 
     def get_message_payload(self, documents, base_url, directory):
         document_block = self.DOC_TEMPLATE_BLOCK
