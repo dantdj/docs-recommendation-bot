@@ -8,7 +8,7 @@ class DocumentList:
         "text": {
             "type": "mrkdwn",
             "text": (
-                "I found the below docs that might be useful:"
+                "I found the below doc(s) that might be useful:"
             )
         }
     }

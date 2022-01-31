@@ -53,8 +53,12 @@ class DocumentFinder():
             cosine_similarities = cosine_similarity(vector, query_vec).flatten()
             most_similar_doc_indices = np.argsort(cosine_similarities, axis=0)[:-5-1:-1]
 
+            max_similarity = max(cosine_similarities)
             for index in most_similar_doc_indices:
-                if cosine_similarities[index] != 0:
+                # Only include document if the similarity score is at least 75% of the highest similarity score
+                # This means we return multiple documents when similar scores are seen, but only one when a document
+                # is a clear winner
+                if cosine_similarities[index] > max_similarity * 0.75:
                     doc_titles.append(file_list[index])
                 print('Similarity = {}'.format(cosine_similarities[index]))
                 print('file: {}, '.format(file_list[index]))
