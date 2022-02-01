@@ -32,17 +32,9 @@ class DocumentFinder():
 
         for directory in configured_directories:
             chosen_directory = directory
-            file_list = glob.glob(f"{directory['path']}/**/*.md", recursive=True)
-
-            # Remove the README files - they're just content pages and can throw things off
-            file_list = [filename for filename in file_list if "readme.md" not in filename.lower()]
-
-            document_list = []
-            for file in file_list:
-                with open(file) as f:
-                    preprocessed_document = self.preprocess_document(f.read())
-                    document_list.append(preprocessed_document)
-
+            file_list = self.get_file_list(directory)
+            document_list = self.get_document_list(file_list)
+            
             # Using a no-op tokenizer here as we tokenized ourselves during pre-processing
             vectorizer = TfidfVectorizer(tokenizer=self.noop_tokenizer, lowercase=False)
             vector = vectorizer.fit_transform(document_list)
@@ -60,8 +52,29 @@ class DocumentFinder():
                 # is a clear winner
                 if cosine_similarities[index] > max_similarity * 0.75:
                     doc_titles.append(file_list[index])
-                print('Similarity = {}'.format(cosine_similarities[index]))
-                print('file: {}, '.format(file_list[index]))
-                print()
+                    self.print_file_similarity(cosine_similarities[index], file_list[index])
+                
         
         return (doc_titles, chosen_directory)
+
+    def print_file_similarity(self, similarity, filename):
+        print('Similarity = {}'.format(similarity))
+        print('File: {}, '.format(filename))
+        print()
+
+    def get_document_list(self, file_list):
+        document_list = []
+        for file in file_list:
+            with open(file) as f:
+                preprocessed_document = self.preprocess_document(f.read())
+                document_list.append(preprocessed_document)
+
+        return document_list
+
+    def get_file_list(self, directory):
+        file_list = glob.glob(f"{directory['path']}/**/*.md", recursive=True)
+
+        # Remove the README files - they're just content pages and can throw things off
+        file_list = [filename for filename in file_list if "readme.md" not in filename.lower()]
+
+        return file_list
